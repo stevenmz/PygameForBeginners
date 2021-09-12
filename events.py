@@ -1,0 +1,5 @@
+import pygame
+
+EVENT_RED_HIT = pygame.USEREVENT + 1
+EVENT_YELLOW_HIT = pygame.USEREVENT + 2
+EVENT_BULLET_OFFSCREEN = pygame.USEREVENT + 3
