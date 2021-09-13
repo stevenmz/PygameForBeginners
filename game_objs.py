@@ -1,6 +1,6 @@
 import pygame
 import RgbColors
-from typing import List
+from typing import List, Tuple
 
 import events
 
@@ -21,7 +21,7 @@ class DrawableObject:
 
     def process_event(self, event):
         """Not all drawable objects care about events so provide a default implementation"""
-        return []
+        return False, []
 
     def process_keys_pressed(self, keys):
         """Not all drawable objects care about key presses so provide a default implementation"""
@@ -81,17 +81,17 @@ class Spaceship(DrawableObject):
         self.icon_width, self.icon_height = width, height
         self.VEL = 5
 
+        self.rotation_angle = rotation_angle
         self.image: pygame.Surface = pygame.image.load(icon_path)
         self.image: pygame.Surface = pygame.transform.scale(
             self.image, (self.icon_width, self.icon_height)
         )
+        self.image = pygame.transform.rotate(self.image, self.rotation_angle)
 
         self.left_key = movement_keys[0]
         self.right_key = movement_keys[1]
         self.up_key = movement_keys[2]
         self.down_key = movement_keys[3]
-
-        self.image = pygame.transform.rotate(self.image, rotation_angle)
 
         self.width = self.image.get_width()
         self.height = self.image.get_height()
@@ -101,11 +101,13 @@ class Spaceship(DrawableObject):
     def draw(self, window: pygame.Surface):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
-    def process_event(self, event) -> List[DrawableObject]:
+    def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
         new_game_objs = []
+        handled_event = False
+
         if event.type == pygame.KEYDOWN:
             print("process_event", event)
-            if event.key == pygame.K_LCTRL:
+            if event.key == pygame.K_LCTRL and self.rotation_angle <= 90:
                 new_game_objs.append(
                     Bullet(
                         self.rect.x + self.rect.width,
@@ -116,7 +118,8 @@ class Spaceship(DrawableObject):
                         RgbColors.RED,
                     )
                 )
-            elif event.key == pygame.K_RCTRL:
+                handled_event = True
+            elif event.key == pygame.K_RCTRL and self.rotation_angle > 90:
                 new_game_objs.append(
                     Bullet(
                         self.rect.x,
@@ -127,8 +130,9 @@ class Spaceship(DrawableObject):
                         RgbColors.YELLOW,
                     )
                 )
+                handled_event = True
 
-        return new_game_objs
+        return handled_event, new_game_objs
 
     def process_keys_pressed(self, keys):
         if keys[self.left_key]:  # Left
