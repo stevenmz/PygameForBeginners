@@ -98,14 +98,11 @@ class SpaceshipGame:
                 ):
                     if event.obj in self.game_objects:
                         self.game_objects.remove(event.obj)
+                elif event.type == events.EVENT_NEW_OBJECT_CREATED:
+                    self.game_objects.append(event.obj)
 
                 for obj in self.game_objects:
-                    vals = obj.process_event(event)
-
-                    # Any new trackable objects the result of a key press should now be tracked.
-                    for val in vals:
-                        if isinstance(val, DrawableObject):
-                            self.game_objects.append(val)
+                    obj.process_event(event)
 
             for obj in self.game_objects:
                 obj.process_keys_pressed(pygame.key.get_pressed())

@@ -1,5 +1,4 @@
 import pygame
-from pygame import font
 import RgbColors
 from typing import List, Tuple
 import os
@@ -192,10 +191,8 @@ class RedSpaceship(Spaceship):
         self.rotation_angle = 90
         self.image = pygame.transform.rotate(self.image, self.rotation_angle)
 
-    def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
-        new_objs = super().process_event(event)
-        new_game_objs = []
-        new_game_objs.extend(new_objs)
+    def process_event(self, event) -> None:
+        super().process_event(event)
 
         if event.type == pygame.KEYDOWN:
             print("process_event", event)
@@ -209,12 +206,12 @@ class RedSpaceship(Spaceship):
                     RgbColors.RED,
                 )
                 self.bullets_remaining -= 1
-                new_game_objs.append(bullet)
                 self.my_fired_bullets.append(bullet)
 
-                pygame.mixer.Sound.play(self.bullet_sound)
+                event = pygame.event.Event(events.EVENT_NEW_OBJECT_CREATED, obj=bullet)
+                pygame.event.post(event)
 
-        return new_game_objs
+                pygame.mixer.Sound.play(self.bullet_sound)
 
 
 class YellowSpaceship(Spaceship):
@@ -232,10 +229,8 @@ class YellowSpaceship(Spaceship):
         self.rotation_angle = 270
         self.image = pygame.transform.rotate(self.image, self.rotation_angle)
 
-    def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
-        new_objs = super().process_event(event)
-        new_game_objs = []
-        new_game_objs.extend(new_objs)
+    def process_event(self, event) -> None:
+        super().process_event(event)
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RCTRL and self.bullets_remaining > 0:
@@ -248,12 +243,12 @@ class YellowSpaceship(Spaceship):
                     RgbColors.YELLOW,
                 )
                 self.bullets_remaining -= 1
-                new_game_objs.append(bullet)
                 self.my_fired_bullets.append(bullet)
 
                 pygame.mixer.Sound.play(self.bullet_sound)
 
-        return new_game_objs
+                event = pygame.event.Event(events.EVENT_NEW_OBJECT_CREATED, obj=bullet)
+                pygame.event.post(event)
 
 
 class Bullet(DrawableObject):
@@ -338,8 +333,6 @@ class WinnerMessage(DrawableObject):
 
             pygame.event.set_blocked(None)
             pygame.event.set_allowed(pygame.QUIT)
-
-        return []
 
     def draw(self, window):
         super().draw(window)
