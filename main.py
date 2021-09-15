@@ -10,6 +10,7 @@ from game_objs import (
     Line,
     RedHealth,
     YellowHealth,
+    WinnerMessage,
 )
 from collision_manager import find_collisions
 import events
@@ -32,6 +33,10 @@ class SpaceshipGame:
         self.CLOCK = pygame.time.Clock()
 
         self.game_objects = []
+
+        self.winning_font = pygame.font.Font(
+            os.path.join("Assets", "QuirkyRobot.ttf"), 100
+        )
 
         rs = RedSpaceship(
             300,
@@ -63,6 +68,15 @@ class SpaceshipGame:
         self.game_objects.append(
             YellowHealth(width, 0, 0, 30, os.path.join("Assets", "QuirkyRobot.ttf"))
         )
+        self.game_objects.append(
+            WinnerMessage(
+                0,
+                0,
+                width,
+                height,
+                os.path.join("Assets", "QuirkyRobot.ttf"),
+            )
+        )
 
     def run(self):
         self.WIN = pygame.display.set_mode((self.width, self.height))
@@ -84,6 +98,27 @@ class SpaceshipGame:
                 ):
                     if event.obj in self.game_objects:
                         self.game_objects.remove(event.obj)
+                elif event.type == events.EVENT_SPACESHIP_DESTROYED:
+                    # Draw winner message
+                    winner = (
+                        "Yellow" if isinstance(event.obj, YellowSpaceship) else "Red"
+                    )
+                    color = (
+                        RgbColors.YELLOW
+                        if isinstance(event.obj, YellowSpaceship)
+                        else RgbColors.RED
+                    )
+                    winning_str = f"{winner} Spaceship Wins!!!"
+                    text_width, text_height = self.winning_font.size(winning_str)
+                    text_surface = self.winning_font.render(winning_str, True, color)
+                    self.WIN.blit(
+                        text_surface,
+                        (
+                            self.width // 2 - text_width // 2,
+                            self.height // 2 - text_height // 2,
+                        ),
+                    )
+                    pygame.event.set_blocked(None)
 
                 for obj in self.game_objects:
                     vals = obj.process_event(event)

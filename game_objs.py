@@ -322,3 +322,38 @@ class YellowHealth(DrawableObject):
             f"Health: {self.health_remaining}", True, RgbColors.YELLOW
         )
         window.blit(health_indicator, (self.x, self.y))
+
+
+class WinnerMessage(DrawableObject):
+    def __init__(self, x: int, y: int, width: int, height: int, font_path):
+        super().__init__(x, y, width, height)
+        self.font = pygame.font.Font(font_path, 150)
+        self.winner_selected = False
+
+    def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
+        if event.type == events.EVENT_SPACESHIP_DESTROYED:
+            winner = "Yellow" if isinstance(event.obj, YellowSpaceship) else "Red"
+            self.winning_str = f"{winner} Wins!!!"
+            self.winner_selected = True
+
+            pygame.event.set_blocked(None)
+            pygame.event.set_allowed(pygame.QUIT)
+
+        return []
+
+    def draw(self, window):
+        super().draw(window)
+        if self.winner_selected:
+            text_width, text_height = self.font.size(self.winning_str)
+
+            color = RgbColors.YELLOW if "Yellow" in self.winning_str else RgbColors.RED
+
+            text_surface = self.font.render(self.winning_str, True, color)
+
+            window.blit(
+                text_surface,
+                (
+                    self.width // 2 - text_width // 2,
+                    self.height // 2 - text_height // 2,
+                ),
+            )
