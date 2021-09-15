@@ -332,7 +332,7 @@ class WinnerMessage(DrawableObject):
 
     def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
         if event.type == events.EVENT_SPACESHIP_DESTROYED:
-            winner = "Yellow" if isinstance(event.obj, YellowSpaceship) else "Red"
+            winner = "Red" if isinstance(event.obj, YellowSpaceship) else "Yellow"
             self.winning_str = f"{winner} Wins!!!"
             self.winner_selected = True
 
