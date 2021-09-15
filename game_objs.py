@@ -2,7 +2,7 @@ import pygame
 from pygame import font
 import RgbColors
 from typing import List, Tuple
-
+import os
 import events
 
 
@@ -99,6 +99,14 @@ class Spaceship(DrawableObject):
         self.bullets_remaining = self.max_bullets
         self.my_fired_bullets = []
 
+        # Sounds
+        self.bullet_sound = pygame.mixer.Sound(
+            os.path.join("Assets", "spaceship_fired.mp3")
+        )
+        self.spaceshit_hit_sound = pygame.mixer.Sound(
+            os.path.join("Assets", "spaceship_hit.mp3")
+        )
+
     def draw(self, window: pygame.Surface):
         window.blit(self.image, (self.rect.x, self.rect.y))
 
@@ -154,6 +162,7 @@ class Spaceship(DrawableObject):
                 # Went off the bottom of the canvas
                 self.rect.y -= self.VEL
         elif isinstance(colliding_object, Bullet):
+            pygame.mixer.Sound.play(self.spaceshit_hit_sound)
             self.health_remaining -= 1
             if self.health_remaining <= 0:
                 dead_event = pygame.event.Event(
@@ -203,6 +212,8 @@ class RedSpaceship(Spaceship):
                 new_game_objs.append(bullet)
                 self.my_fired_bullets.append(bullet)
 
+                pygame.mixer.Sound.play(self.bullet_sound)
+
         return new_game_objs
 
 
@@ -239,6 +250,8 @@ class YellowSpaceship(Spaceship):
                 self.bullets_remaining -= 1
                 new_game_objs.append(bullet)
                 self.my_fired_bullets.append(bullet)
+
+                pygame.mixer.Sound.play(self.bullet_sound)
 
         return new_game_objs
 
