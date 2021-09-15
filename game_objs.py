@@ -1,4 +1,5 @@
 import pygame
+from pygame import font
 import RgbColors
 from typing import List, Tuple
 
@@ -103,7 +104,6 @@ class Spaceship(DrawableObject):
 
     def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
         new_game_objs = []
-        handled_event = False
 
         if (
             event.type == events.EVENT_BULLET_OFFSCREEN
@@ -113,9 +113,8 @@ class Spaceship(DrawableObject):
             if bullet in self.my_fired_bullets:
                 self.my_fired_bullets.remove(event.obj)
                 self.bullets_remaining += 1
-                handled_event = True
 
-        return handled_event, new_game_objs
+        return new_game_objs
 
     def process_keys_pressed(self, keys):
         if keys[self.left_key]:  # Left
@@ -162,7 +161,7 @@ class Spaceship(DrawableObject):
                 )
                 pygame.event.post(dead_event)
             spaceship_hit_event = pygame.event.Event(
-                events.EVENT_SPACESHIP_HIT, obj=colliding_object
+                events.EVENT_SPACESHIP_HIT, obj=colliding_object, ship=self
             )
             pygame.event.post(spaceship_hit_event)
 
@@ -185,14 +184,9 @@ class RedSpaceship(Spaceship):
         self.image = pygame.transform.rotate(self.image, self.rotation_angle)
 
     def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
-        handled_event_in_parent, new_objs = super().process_event(event)
+        new_objs = super().process_event(event)
         new_game_objs = []
         new_game_objs.extend(new_objs)
-        handled_event = handled_event_in_parent
-
-        # If the event was handled in the parent, no further processing.
-        if handled_event:
-            return handled_event, new_game_objs
 
         if event.type == pygame.KEYDOWN:
             print("process_event", event)
@@ -205,12 +199,11 @@ class RedSpaceship(Spaceship):
                     5,
                     RgbColors.RED,
                 )
-                handled_event = True
                 self.bullets_remaining -= 1
                 new_game_objs.append(bullet)
                 self.my_fired_bullets.append(bullet)
 
-        return handled_event, new_game_objs
+        return new_game_objs
 
 
 class YellowSpaceship(Spaceship):
@@ -229,14 +222,9 @@ class YellowSpaceship(Spaceship):
         self.image = pygame.transform.rotate(self.image, self.rotation_angle)
 
     def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
-        handled_event_in_parent, new_objs = super().process_event(event)
+        new_objs = super().process_event(event)
         new_game_objs = []
         new_game_objs.extend(new_objs)
-        handled_event = handled_event_in_parent
-
-        # If the event was handled in the parent, no further processing.
-        if handled_event:
-            return handled_event, new_game_objs
 
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RCTRL and self.bullets_remaining > 0:
@@ -248,13 +236,11 @@ class YellowSpaceship(Spaceship):
                     -5,
                     RgbColors.YELLOW,
                 )
-
-                handled_event = True
                 self.bullets_remaining -= 1
                 new_game_objs.append(bullet)
                 self.my_fired_bullets.append(bullet)
 
-        return handled_event, new_game_objs
+        return new_game_objs
 
 
 class Bullet(DrawableObject):
@@ -278,3 +264,48 @@ class Line(DrawableObject):
 
     def draw(self, window: pygame.Surface):
         pygame.draw.rect(window, self.color, self.rect)
+
+
+class RedHealth(DrawableObject):
+    def __init__(self, x: int, y: int, width: int, height: int, font_path):
+        super().__init__(x, y, width, height)
+        self.font = pygame.font.Font(font_path, self.height)
+        self.health_remaining = "Full"
+
+    def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
+        if event.type == events.EVENT_SPACESHIP_HIT:
+            ship = event.ship
+            if isinstance(ship, RedSpaceship):
+                self.health_remaining = ship.health_remaining
+
+        return []
+
+    def draw(self, window):
+        super().draw(window)
+        health_indicator = self.font.render(
+            f"Health: {self.health_remaining}", True, RgbColors.RED
+        )
+        window.blit(health_indicator, (self.x, self.y))
+
+
+class YellowHealth(DrawableObject):
+    def __init__(self, x: int, y: int, width: int, height: int, font_path):
+        super().__init__(x, y, width, height)
+        self.font = pygame.font.Font(font_path, self.height)
+        self.health_remaining = "Full"
+        self.x -= self.font.size("Health: XX")[0] + 5
+
+    def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
+        if event.type == events.EVENT_SPACESHIP_HIT:
+            ship = event.ship
+            if isinstance(ship, YellowSpaceship):
+                self.health_remaining = ship.health_remaining
+
+        return []
+
+    def draw(self, window):
+        super().draw(window)
+        health_indicator = self.font.render(
+            f"Health: {self.health_remaining}", True, RgbColors.YELLOW
+        )
+        window.blit(health_indicator, (self.x, self.y))

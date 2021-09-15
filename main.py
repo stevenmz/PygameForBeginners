@@ -2,9 +2,19 @@ import pygame
 import os
 
 import RgbColors
-from game_objs import Canvas, DrawableObject, RedSpaceship, YellowSpaceship, Line
+from game_objs import (
+    Canvas,
+    DrawableObject,
+    RedSpaceship,
+    YellowSpaceship,
+    Line,
+    RedHealth,
+    YellowHealth,
+)
 from collision_manager import find_collisions
 import events
+
+pygame.init()
 
 
 class SpaceshipGame:
@@ -47,6 +57,12 @@ class SpaceshipGame:
         self.game_objects.append(border)
         self.game_objects.append(rs)
         self.game_objects.append(ys)
+        self.game_objects.append(
+            RedHealth(0, 0, 0, 30, os.path.join("Assets", "QuirkyRobot.ttf"))
+        )
+        self.game_objects.append(
+            YellowHealth(width, 0, 0, 30, os.path.join("Assets", "QuirkyRobot.ttf"))
+        )
 
     def run(self):
         self.WIN = pygame.display.set_mode((self.width, self.height))
@@ -70,16 +86,12 @@ class SpaceshipGame:
                         self.game_objects.remove(event.obj)
 
                 for obj in self.game_objects:
-                    handled_event, vals = obj.process_event(event)
+                    vals = obj.process_event(event)
 
                     # Any new trackable objects the result of a key press should now be tracked.
                     for val in vals:
                         if isinstance(val, DrawableObject):
                             self.game_objects.append(val)
-
-                    if handled_event:
-                        # One game obj per event
-                        break
 
             for obj in self.game_objects:
                 obj.process_keys_pressed(pygame.key.get_pressed())

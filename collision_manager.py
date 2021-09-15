@@ -15,4 +15,3 @@ def find_collisions(game_objs: List[DrawableObject]):
 
         if obj1.get_bounding_rectangle().colliderect(obj2.get_bounding_rectangle()):
             obj1.handle_collision(obj2)
-            obj2.handle_collision(obj1)
