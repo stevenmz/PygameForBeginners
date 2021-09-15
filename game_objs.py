@@ -94,6 +94,8 @@ class Spaceship(DrawableObject):
         self.height = self.image.get_height()
 
         self.max_bullets = max_bullets
+        self.bullets_remaining = self.max_bullets
+        self.my_fired_bullets = []
 
     def draw(self, window: pygame.Surface):
         window.blit(self.image, (self.rect.x, self.rect.y))
@@ -102,31 +104,11 @@ class Spaceship(DrawableObject):
         new_game_objs = []
         handled_event = False
 
-        if event.type == pygame.KEYDOWN:
-            print("process_event", event)
-            if event.key == pygame.K_LCTRL and self.rotation_angle <= 90:
-                new_game_objs.append(
-                    Bullet(
-                        self.rect.x + self.rect.width,
-                        self.rect.y + self.rect.height // 2,
-                        10,
-                        5,
-                        5,
-                        RgbColors.RED,
-                    )
-                )
-                handled_event = True
-            elif event.key == pygame.K_RCTRL and self.rotation_angle > 90:
-                new_game_objs.append(
-                    Bullet(
-                        self.rect.x,
-                        self.rect.y + self.rect.height // 2,
-                        10,
-                        5,
-                        -5,
-                        RgbColors.YELLOW,
-                    )
-                )
+        if event.type == events.EVENT_BULLET_OFFSCREEN:
+            bullet = event.obj
+            if bullet in self.my_fired_bullets:
+                self.my_fired_bullets.remove(event.obj)
+                self.bullets_remaining += 1
                 handled_event = True
 
         return handled_event, new_game_objs
@@ -188,23 +170,30 @@ class RedSpaceship(Spaceship):
         self.image = pygame.transform.rotate(self.image, self.rotation_angle)
 
     def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
+        handled_event_in_parent, new_objs = super().process_event(event)
         new_game_objs = []
-        handled_event = False
+        new_game_objs.extend(new_objs)
+        handled_event = handled_event_in_parent
+
+        # If the event was handled in the parent, no further processing.
+        if handled_event:
+            return handled_event, new_game_objs
 
         if event.type == pygame.KEYDOWN:
             print("process_event", event)
-            if event.key == pygame.K_LCTRL:
-                new_game_objs.append(
-                    Bullet(
-                        self.rect.x + self.rect.width,
-                        self.rect.y + self.rect.height // 2,
-                        10,
-                        5,
-                        5,
-                        RgbColors.RED,
-                    )
+            if event.key == pygame.K_LCTRL and self.bullets_remaining > 0:
+                bullet = Bullet(
+                    self.rect.x + self.rect.width,
+                    self.rect.y + self.rect.height // 2,
+                    10,
+                    5,
+                    5,
+                    RgbColors.RED,
                 )
                 handled_event = True
+                self.bullets_remaining -= 1
+                new_game_objs.append(bullet)
+                self.my_fired_bullets.append(bullet)
 
         return handled_event, new_game_objs
 
@@ -225,22 +214,30 @@ class YellowSpaceship(Spaceship):
         self.image = pygame.transform.rotate(self.image, self.rotation_angle)
 
     def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
+        handled_event_in_parent, new_objs = super().process_event(event)
         new_game_objs = []
-        handled_event = False
+        new_game_objs.extend(new_objs)
+        handled_event = handled_event_in_parent
+
+        # If the event was handled in the parent, no further processing.
+        if handled_event:
+            return handled_event, new_game_objs
 
         if event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_RCTRL:
-                new_game_objs.append(
-                    Bullet(
-                        self.rect.x,
-                        self.rect.y + self.rect.height // 2,
-                        10,
-                        5,
-                        -5,
-                        RgbColors.YELLOW,
-                    )
+            if event.key == pygame.K_RCTRL and self.bullets_remaining > 0:
+                bullet = Bullet(
+                    self.rect.x,
+                    self.rect.y + self.rect.height // 2,
+                    10,
+                    5,
+                    -5,
+                    RgbColors.YELLOW,
                 )
+
                 handled_event = True
+                self.bullets_remaining -= 1
+                new_game_objs.append(bullet)
+                self.my_fired_bullets.append(bullet)
 
         return handled_event, new_game_objs
 
