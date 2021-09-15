@@ -79,6 +79,7 @@ class Spaceship(DrawableObject):
 
         self.icon_width, self.icon_height = width, height
         self.VEL = 5
+        self.health_remaining = 10
 
         self.image: pygame.Surface = pygame.image.load(icon_path)
         self.image: pygame.Surface = pygame.transform.scale(
@@ -104,7 +105,10 @@ class Spaceship(DrawableObject):
         new_game_objs = []
         handled_event = False
 
-        if event.type == events.EVENT_BULLET_OFFSCREEN:
+        if (
+            event.type == events.EVENT_BULLET_OFFSCREEN
+            or event.type == events.EVENT_SPACESHIP_HIT
+        ):
             bullet = event.obj
             if bullet in self.my_fired_bullets:
                 self.my_fired_bullets.remove(event.obj)
@@ -150,6 +154,17 @@ class Spaceship(DrawableObject):
             elif self.rect.y + self.rect.height + 15 >= canvas_rect.height:
                 # Went off the bottom of the canvas
                 self.rect.y -= self.VEL
+        elif isinstance(colliding_object, Bullet):
+            self.health_remaining -= 1
+            if self.health_remaining <= 0:
+                dead_event = pygame.event.Event(
+                    events.EVENT_SPACESHIP_DESTROYED, obj=self
+                )
+                pygame.event.post(dead_event)
+            spaceship_hit_event = pygame.event.Event(
+                events.EVENT_SPACESHIP_HIT, obj=colliding_object
+            )
+            pygame.event.post(spaceship_hit_event)
 
 
 class RedSpaceship(Spaceship):
@@ -183,7 +198,7 @@ class RedSpaceship(Spaceship):
             print("process_event", event)
             if event.key == pygame.K_LCTRL and self.bullets_remaining > 0:
                 bullet = Bullet(
-                    self.rect.x + self.rect.width,
+                    self.rect.x + self.rect.width + 2,
                     self.rect.y + self.rect.height // 2,
                     10,
                     5,
@@ -226,7 +241,7 @@ class YellowSpaceship(Spaceship):
         if event.type == pygame.KEYDOWN:
             if event.key == pygame.K_RCTRL and self.bullets_remaining > 0:
                 bullet = Bullet(
-                    self.rect.x,
+                    self.rect.x - self.rect.width - 2,
                     self.rect.y + self.rect.height // 2,
                     10,
                     5,

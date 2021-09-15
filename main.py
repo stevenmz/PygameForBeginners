@@ -62,11 +62,12 @@ class SpaceshipGame:
                 print(event)
                 if event.type == pygame.QUIT:
                     run = False
-                elif event.type == events.EVENT_BULLET_OFFSCREEN:
-                    print(event.obj)
+                elif (
+                    event.type == events.EVENT_BULLET_OFFSCREEN
+                    or event.type == events.EVENT_SPACESHIP_HIT
+                ):
                     if event.obj in self.game_objects:
                         self.game_objects.remove(event.obj)
-                        print("removed bullet")
 
                 for obj in self.game_objects:
                     handled_event, vals = obj.process_event(event)
