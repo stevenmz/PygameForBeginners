@@ -2,7 +2,7 @@ import pygame
 import os
 
 import RgbColors
-from game_objs import Canvas, DrawableObject, Spaceship, Line
+from game_objs import Canvas, DrawableObject, RedSpaceship, YellowSpaceship, Line
 from collision_manager import find_collisions
 import events
 
@@ -23,23 +23,21 @@ class SpaceshipGame:
 
         self.game_objects = []
 
-        rs = Spaceship(
+        rs = RedSpaceship(
             300,
             100,
             55,
             40,
             os.path.join("Assets", "spaceship_red.png"),
             [pygame.K_a, pygame.K_d, pygame.K_w, pygame.K_s],
-            90,
         )
-        ys = Spaceship(
+        ys = YellowSpaceship(
             700,
             100,
             55,
             40,
             os.path.join("Assets", "spaceship_yellow.png"),
             [pygame.K_LEFT, pygame.K_RIGHT, pygame.K_UP, pygame.K_DOWN],
-            270,
         )
         border = Line(width / 2 - 5, 0, 10, height, RgbColors.BLACK)
 

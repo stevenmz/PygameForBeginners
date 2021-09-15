@@ -73,7 +73,6 @@ class Spaceship(DrawableObject):
         height: int,
         icon_path: str,
         movement_keys: List[int],
-        rotation_angle: int,
         max_bullets=3,
     ):
         super().__init__(x, y, width, height)
@@ -81,12 +80,10 @@ class Spaceship(DrawableObject):
         self.icon_width, self.icon_height = width, height
         self.VEL = 5
 
-        self.rotation_angle = rotation_angle
         self.image: pygame.Surface = pygame.image.load(icon_path)
         self.image: pygame.Surface = pygame.transform.scale(
             self.image, (self.icon_width, self.icon_height)
         )
-        self.image = pygame.transform.rotate(self.image, self.rotation_angle)
 
         self.left_key = movement_keys[0]
         self.right_key = movement_keys[1]
@@ -171,6 +168,81 @@ class Spaceship(DrawableObject):
             elif self.rect.y + self.rect.height + 15 >= canvas_rect.height:
                 # Went off the bottom of the canvas
                 self.rect.y -= self.VEL
+
+
+class RedSpaceship(Spaceship):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        icon_path: str,
+        movement_keys: List[int],
+        max_bullets=3,
+    ):
+        super().__init__(
+            x, y, width, height, icon_path, movement_keys, max_bullets=max_bullets
+        )
+        self.rotation_angle = 90
+        self.image = pygame.transform.rotate(self.image, self.rotation_angle)
+
+    def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
+        new_game_objs = []
+        handled_event = False
+
+        if event.type == pygame.KEYDOWN:
+            print("process_event", event)
+            if event.key == pygame.K_LCTRL:
+                new_game_objs.append(
+                    Bullet(
+                        self.rect.x + self.rect.width,
+                        self.rect.y + self.rect.height // 2,
+                        10,
+                        5,
+                        5,
+                        RgbColors.RED,
+                    )
+                )
+                handled_event = True
+
+        return handled_event, new_game_objs
+
+
+class YellowSpaceship(Spaceship):
+    def __init__(
+        self,
+        x: int,
+        y: int,
+        width: int,
+        height: int,
+        icon_path: str,
+        movement_keys: List[int],
+        max_bullets=3,
+    ):
+        super().__init__(x, y, width, height, icon_path, movement_keys, max_bullets)
+        self.rotation_angle = 270
+        self.image = pygame.transform.rotate(self.image, self.rotation_angle)
+
+    def process_event(self, event) -> Tuple[bool, List[DrawableObject]]:
+        new_game_objs = []
+        handled_event = False
+
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_RCTRL:
+                new_game_objs.append(
+                    Bullet(
+                        self.rect.x,
+                        self.rect.y + self.rect.height // 2,
+                        10,
+                        5,
+                        -5,
+                        RgbColors.YELLOW,
+                    )
+                )
+                handled_event = True
+
+        return handled_event, new_game_objs
 
 
 class Bullet(DrawableObject):
